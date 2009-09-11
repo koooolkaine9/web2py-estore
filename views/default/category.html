@@ -1,29 +1,30 @@
-{{extend 'layout.html'}}
-{{include 'td_product.html'}}
+{{ extend 'layout.html' }}
+{{ include 'td_product.html' }}
 
-{{if len(categories)>1:}}
+{{ if len(categories) > 1: }}
 <h2>Product Categories</h2>
 <h2>
-{{for category in categories:}}
-[{{=A(category.name,_href=URL(r=request,f='category/%s'%category.id))}}]
-{{pass}}
-</h2><br/><br/>
-{{pass}}
+    {{ for category in categories: }}
+[{{= A(category.name, _href=URL(r=request, f='category/%s' % category.id)) }}]
+    {{ pass }}
+</h2>
+<br/><br/>
+{{ pass }}
 
-<h1>Products in {{=category_name}}</h1>
+<h1>Products in {{= category_name }}</h1>
 
-{{if featured:}}
+{{ if featured: }}
 <p><center><table width="80%">
-{{for product in featured: show(product)}}
+    {{ for product in featured: show(product) }}
 </table></center></p>
-{{pass}}
+{{ pass }}
 
-{{if favourites:}}
+{{ if favourites: }}
 <p><center><table width="80%">
-{{for product in favourites: show(product)}}
+    {{ for product in favourites: show(product) }}
 </table></center></p>
-{{pass}}
+{{ pass }}
 
-{{if not featured and not favourites:}}
-<h2>No products in category {{=category_name}}</h2>
-{{pass}}
+{{ if not featured and not favourites: }}
+<h2>No products in category {{= category_name }}</h2>
+{{ pass }}
