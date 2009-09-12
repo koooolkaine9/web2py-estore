@@ -5,7 +5,7 @@
 <!--
 function process(form_name) {
     i=new Image()
-    i.src="/{{= request.application }}/default/empty_chart"; 
+    i.src="/{{= request.application }}/default/empty_cart"; 
     form_name.submit();
 }
 //-->
@@ -14,9 +14,9 @@ function process(form_name) {
 <h1>Checkout</h1>
 
 {{ if not products: }}
-<h2>No products in your shopping chart</h2>
+<h2>No products in your shopping cart</h2>
 {{ else: }}
-<h2>Products in your shopping chart</h2>
+<h2>Products in your shopping cart</h2>
 <p><center><table width="80%">
 {{ for id, product in products.items(): show(product) }}
 </table></center></p>
@@ -29,7 +29,7 @@ function process(form_name) {
     {{ for id, product in products.items(): }}
     <input name="item_name_{{=k}}" type="hidden" value="{{=product.name}}"/>
     <input name="item_description_{{=k}}" type="hidden" value="{{=product.short_description}}"/>
-    <input name="item_quantity_{{=k}}" type="hidden" value="{{=session.chart[str(id)]}}"/>
+    <input name="item_quantity_{{=k}}" type="hidden" value="{{=session.cart[str(id)]}}"/>
     <input name="item_price_{{=k}}" type="hidden" value="{{=product.price}}"/>
     <input name="item_weight_{{=k}}" unit="LB" type="hidden" value="{{=product.weight_in_pounds}}"/>
     <input name="item_currency_{{=k}}" type="hidden" value="USD"/>

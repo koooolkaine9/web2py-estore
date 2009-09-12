@@ -1,11 +1,11 @@
 
-if not session.chart: session.chart, session.balance= {}, 0
+if not session.cart: session.cart, session.balance= {}, 0
 app = request.application
 response.menu = [
   ['Store Front', request.function == 'index','/%s/default/index' % app],
   ['About Us', request.function == 'aboutus','/%s/default/aboutus' % app],
   ['Contact Us', request.function == 'contactus','/%s/default/contactus' % app],
-  ['Shopping Chart $%.2f' % float(session.balance), request.function == 'checkout', '/%s/default/checkout' % app]
+  ['Shopping Cart $%.2f' % float(session.balance), request.function == 'checkout', '/%s/default/checkout' % app]
 ]
 
 session.google_merchant_id = mystore.google_merchant_id
@@ -62,36 +62,36 @@ def product():
     return dict(product=product, comments=comments, related=related, form=form)
 
 
-def add_to_chart():
-    # allow add to chart
-    pid=request.args[0]
-    product=store(store.product.id == pid).select()[0]
+def add_to_cart():
+    # allow add to cart
+    pid = request.args[0]
+    product = store(store.product.id == pid).select()[0]
     product.update_record(clicked=product.clicked+1)
-    try: qty = session.chart[pid] + 1
+    try: qty = session.cart[pid] + 1
     except: qty = 1
-    session.chart[pid] = qty
+    session.cart[pid] = qty
     session.balance += product.price
     redirect(URL(r=request, f='checkout'))
 
-def remove_from_chart():
-    # allow add to chart
-    pid=request.args[0]
-    product=store(store.product.id == pid).select()[0]
-    if session.chart.has_key(pid):
+def remove_from_cart():
+    # allow add to cart
+    pid = request.args[0]
+    product = store(store.product.id == pid).select()[0]
+    if session.cart.has_key(pid):
         session.balance -= product.price
-        session.chart[pid] -= 1
-        if not session.chart[pid]: del session.chart[pid]
-    redirect(URL(r=request,f='checkout'))
+        session.cart[pid] -= 1
+        if not session.cart[pid]: del session.cart[pid]
+    redirect(URL(r=request, f='checkout'))
 
-def empty_chart():
-    # allow add to chart
-    session.chart, session.balance = {}, 0
+def empty_cart():
+    # allow add to cart
+    session.cart, session.balance = {}, 0
     redirect(URL(r=request, f='checkout'))
 
 def checkout():
-    pids = session.chart.keys()
-    chart = {}
-    pids = session.chart.keys()
+    pids = session.cart.keys()
+    cart = {}
+    pids = session.cart.keys()
     products = {}
     for pid in pids: products[pid] = store(store.product.id==pid).select()[0]
     return dict(products=products, merchant_id=session.google_merchant_id)

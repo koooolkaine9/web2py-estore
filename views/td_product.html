@@ -23,21 +23,21 @@
     {{ if product.old_price: }}
         <b>was ${{= "%.2f" % float(product.old_price) }}</b>
     {{ pass }}
-        <h2>${{= "%.2f"%float(product.price) }}</h2>
-    {{ if session.chart.has_key(str(product.id)): }}
-        <b>x {{= session.chart[str(product.id)] }} in chart</b>
+        <h2>${{= "%.2f" % float(product.price) }}</h2>
+    {{ if session.cart.has_key(str(product.id)): }}
+        <b>x {{= session.cart[str(product.id)] }} in cart</b>
         <br/>
-        <a href="{{= URL(r=request, f='remove_from_chart/%s' % product.id) }}">remove one from chart</a>
+        <a href="{{= URL(r=request, f='remove_from_cart', args=product.id) }}">remove one from cart</a>
         <br/>
     {{ pass }}
-        <a href="{{= URL(r=request, f='add_to_chart/%s' % product.id) }}">add one to chart</a>
+        <a href="{{= URL(r=request, f='add_to_cart', args=product.id) }}">add one to cart</a>
 {{ pass }}
     </td>
     <td align="center" valign="middle">
 {{ if product.large_image: }}
-        <img src="{{= URL(r=request, f='show/%s' % product.small_image) }}" height="100px" onclick="window.open('/{{= request.application}}/default/popup?/{{= request.application }}/default/show/{{= product.large_image }}', '', 'resizable=1,HEIGHT=200,WIDTH=200');"/>
+        <img src="{{= URL(r=request, f='show', args=product.small_image) }}" height="100px" onclick="window.open('/{{= request.application}}/default/popup?/{{= request.application }}/default/show/{{= product.large_image }}', '', 'resizable=1,HEIGHT=200,WIDTH=200');"/>
 {{ else: }}
-        <img src="{{= URL(r=request, f='show/%s' % product.small_image) }}" height="100px"/>
+        <img src="{{= URL(r=request, f='show', args=product.small_image) }}" height="100px"/>
 {{ pass }}
     </td>
 </tr>
