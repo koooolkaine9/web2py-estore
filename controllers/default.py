@@ -43,21 +43,24 @@ def product():
     if not products: redirect(URL(r=request, f='index'))
     product = products[0]
     product.update_record(viewed=product.viewed+1)
+    
     # post a comment about a product    
     form = SQLFORM(store.comment, fields=['author', 'email', 'body', 'rate'])
     form.vars.product = product.id
-    nc = store(store.comment.product == product.id).count()
     if form.accepts(request.vars, session):
+        nc = store(store.comment.product == product.id).count()
         t = products[0].rating*nc + int(form.vars.rate)
         products[0].update_record(rating=t/(nc+1))
         response.flash = 'comment posted'
     if form.errors: response.flash = 'please check your form below'
     comments = store(store.comment.product == product.id).select(orderby=~store.comment.id)
+    
+    options = store(store.option.product == product.id).select(orderby=store.option.id)
     related_ids = [row.better for row in store(store.up_sell.product == product.id).select(store.up_sell.better)] \
                 + [row.p2 for row in store(store.cross_sell.p1 == product.id).select()] \
                 + [row.p1 for row in store(store.cross_sell.p2 == product.id).select()]
     related = store(store.product.id.belongs(related_ids)).select()
-    return dict(product=product, comments=comments, related=related, form=form)
+    return dict(product=product, comments=comments, options=options, related=related, form=form)
 
 
 def add_to_cart():
@@ -98,11 +101,11 @@ def popup():
     return dict()
 
 def show():
-    response.session_id=None
+    response.session_id = None
     import gluon.contenttype, os
-    filename = request.args[0]
+    filename = '/'.join(request.args)
     response.headers['Content-Type'] = gluon.contenttype.contenttype(filename)
-    return open(os.path.join(request.folder,'uploads/', '%s' % filename), 'rb').read()
+    return open(os.path.join(request.folder, 'uploads', filename), 'rb').read()
 
 def aboutus(): return dict()
 

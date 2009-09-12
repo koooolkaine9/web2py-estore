@@ -2,11 +2,7 @@
 {{ include 'catalog.html' }}
 
 <h2>Product Categories:</h2>
-<h2>
-{{ for category in categories: }}
-[{{= A(category.name,_href=URL(r=request, f='category', args=pretty_url(category.id, category.name))) }}]
-{{ pass }}
-</h2>
+{{ show(categories, function='category') }}
 <br/><br/>
 
 {{ if featured: }}

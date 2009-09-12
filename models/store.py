@@ -4,15 +4,15 @@ store = DAL("sqlite://store.db")
 
 store.define_table('category', 
     Field('name'), 
-    Field('headline', length=512)
+    Field('description', length=512),
+    Field('small_image', 'upload'),
 )
 
 
 store.define_table('product', 
     Field('name'),
     Field('category', store.category),
-    Field('short_description', length=512),
-    Field('long_description', 'text', default=''),
+    Field('description', 'text', default=''),
     Field('small_image', 'upload'),
     Field('large_image', 'upload', default=''),
     Field('quantity_in_stock', 'integer', default=0),
@@ -122,7 +122,7 @@ store.category.name.requires = IS_NOT_IN_DB(store, 'category.name')
 store.product.name.requires = IS_NOT_IN_DB(store, 'product.name')
 store.product.category.requires = IS_IN_DB(store, 'category.id', 'category.name')
 store.product.name.requires = IS_NOT_EMPTY()
-store.product.short_description.requires = IS_NOT_EMPTY()
+store.product.description.requires = IS_NOT_EMPTY()
 store.product.quantity_in_stock.requires = IS_INT_IN_RANGE(0, 1000)
 store.product.price.requires = IS_FLOAT_IN_RANGE(0, 10000)
 store.product.rating.requires = IS_INT_IN_RANGE(-10000, 10000)

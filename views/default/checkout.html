@@ -1,11 +1,11 @@
 {{ extend 'layout.html' }}
 {{ include 'catalog.html' }}
 
-<script language="JavaScript">
+<script language="javascript">
 <!--
 function process(form_name) {
-    i=new Image()
-    i.src="/{{= request.application }}/default/empty_cart"; 
+    i = new Image()
+    i.src = "/{{= request.application }}/default/empty_cart"; 
     form_name.submit();
 }
 //-->
@@ -24,15 +24,15 @@ function process(form_name) {
 
 <center>
 <h2>Balance: ${{= "%.2f" % float(session.balance) }}</h2>
-<form name="google_form" action="https://checkout.google.com/cws/v2/Merchant/{{=merchant_id}}/checkoutForm" id="BB_BuyButtonForm" method="post" name="BB_BuyButtonForm">
+<form name="google_form" action="https://checkout.google.com/cws/v2/Merchant/{{= merchant_id }}/checkoutForm" id="BB_BuyButtonForm" method="post" name="BB_BuyButtonForm">
     {{ k = 1 }}
     {{ for id, product in products.items(): }}
-    <input name="item_name_{{=k}}" type="hidden" value="{{=product.name}}"/>
-    <input name="item_description_{{=k}}" type="hidden" value="{{=product.short_description}}"/>
-    <input name="item_quantity_{{=k}}" type="hidden" value="{{=session.cart[str(id)]}}"/>
-    <input name="item_price_{{=k}}" type="hidden" value="{{=product.price}}"/>
-    <input name="item_weight_{{=k}}" unit="LB" type="hidden" value="{{=product.weight_in_pounds}}"/>
-    <input name="item_currency_{{=k}}" type="hidden" value="USD"/>
+    <input name="item_name_{{= k }}" type="hidden" value="{{= product.name }}"/>
+    <input name="item_description_{{= k }}" type="hidden" value="{{= product.description }}"/>
+    <input name="item_quantity_{{= k }}" type="hidden" value="{{= session.cart[str(id)] }}"/>
+    <input name="item_price_{{= k }}" type="hidden" value="{{= product.price}}"/>
+    <input name="item_weight_{{= k }}" unit="LB" type="hidden" value="{{= product.weight_in_pounds }}"/>
+    <input name="item_currency_{{= k }}" type="hidden" value="USD"/>
     {{ k += 1 }}
     {{ pass }}
 

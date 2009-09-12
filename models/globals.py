@@ -2,9 +2,6 @@
 
 import re
 
-# number of items in each row of catalog 
-CATALOG_WIDTH = 4
-
 
 # delimiter to use between words in URL
 URL_DELIMITER = '-'
