@@ -1,7 +1,7 @@
 {{ def show(product, detailed=False): }}
 <tr>
     <td align="left" valign="top">
-        <a href="{{= URL(r=request, f='product/%s' % product.name) }}">{{= product.name }}</a> (#{{= product.id }})
+        <a href="{{= URL(r=request, f='product', args=pretty_url(product.id, product.name)) }}">{{= product.name }}</a> (#{{= product.id }})
 {{ if detailed: }}
         <br/>
         <i>{{= product.short_description }}</i>

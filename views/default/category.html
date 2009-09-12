@@ -5,7 +5,7 @@
 <h2>Product Categories</h2>
 <h2>
     {{ for category in categories: }}
-[{{= A(category.name, _href=URL(r=request, f='category/%s' % category.id)) }}]
+[{{= A(category.name, _href=URL(r=request, f='category', args=pretty_url(category.id, category.name))) }}]
     {{ pass }}
 </h2>
 <br/><br/>

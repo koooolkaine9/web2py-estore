@@ -1,51 +1,48 @@
 
-if not session.chart: session.chart, session.balance={},0
-app=request.application
-response.menu=\
- [['Store Front',request.function=='index','/%s/default/index'%app],
-  ['About Us',request.function=='aboutus','/%s/default/aboutus'%app],
-  ['Contact Us',request.function=='contactus','/%s/default/contactus'%app],
-  ['Shopping Chart $%.2f'%float(session.balance),request.function=='checkout',
-   '/%s/default/checkout'%app]]
+if not session.chart: session.chart, session.balance= {}, 0
+app = request.application
+response.menu = [
+  ['Store Front', request.function == 'index','/%s/default/index' % app],
+  ['About Us', request.function == 'aboutus','/%s/default/aboutus' % app],
+  ['Contact Us', request.function == 'contactus','/%s/default/contactus' % app],
+  ['Shopping Chart $%.2f' % float(session.balance), request.function == 'checkout', '/%s/default/checkout' % app]
+]
 
-session.google_merchant_id=mystore.google_merchant_id
+session.google_merchant_id = mystore.google_merchant_id
 
 if not session.google_merchant_id:
     session.flash = 'Need to add a Google Checkout ID'
     redirect(URL(r=request, c='manage', f='index'))
 
 def index():
-    categories=store(store.category.id > 0).select(orderby=store.category.name)
-    featured=store(store.product.featured=='T')\
-             .select(orderby=~store.product.id)
+    categories = store(store.category.id > 0).select(orderby=store.category.name)
+    featured = store(store.product.featured == True).select(orderby=~store.product.id)
     return dict(categories=categories,featured=featured)
 
 def category():
-    if len(request.args) < 1: redirect(URL(r=request,f='index'))
-    category=int(request.args[0])
+    if not request.args: redirect(URL(r=request, f='index'))
+    category_id = pretty_id(request.args[0])
     if len(request.args) == 3: 
-        start,stop=int(request.args[1]),int(request.args[2])
+        start, stop = int(request.args[1]), int(request.args[2])
     else:
         start, stop = 0, 20
-    categories = store(store.category.id>0).select(orderby=store.category.name)
-    for item in categories: 
-        if item.id == category:
-            category_name=item.name
-    if start == 0: featured=store(store.product.featured=='T')\
-                  (store.product.category==category)\
-                  .select(orderby=~store.product.id)
-    else: featured = []
+    categories = store(store.category.id > 0).select(orderby=store.category.name)
+    for category in categories: 
+        if category.id == category_id:
+            category_name = category.name
+    if start == 0:
+        featured = store(store.product.featured == True)(store.product.category == category_id).select(orderby=~store.product.id)
+    else:
+        featured = []
     ids = [p.id for p in featured]
-    favourites = store(store.product.category==category)\
-                  .select(orderby=~store.product.rating, limitby=(start,stop))
+    favourites = store(store.product.category == category_id).select(orderby=~store.product.rating, limitby=(start, stop))
     favourites = [f for f in favourites if not f.id in ids] 
-    return dict(category_name=category_name, categories=categories,
-                featured=featured, favourites=favourites)
+    return dict(category_name=category_name, categories=categories, featured=featured, favourites=favourites)
 
 def product():
     if not request.args: redirect(URL(r=request, f='index'))
-    product_name = request.args[0].replace('_', ' ') # XXX need proper way to deal with whitespace
-    products = store(store.product.name == product_name).select()
+    product_id = pretty_id(request.args[0])
+    products = store(store.product.id == product_id).select()
     if not products: redirect(URL(r=request, f='index'))
     product = products[0]
     product.update_record(viewed=product.viewed+1)

@@ -16,6 +16,7 @@ store.define_table('product',
     Field('small_image', 'upload'),
     Field('large_image', 'upload', default=''),
     Field('quantity_in_stock', 'integer', default=0),
+    Field('show_quantity', 'boolean', default=False),
     Field('price', 'double', default=1.00),
     Field('old_price', 'double', default=0.0),
     Field('weight_in_pounds', 'double', default=1),
@@ -112,13 +113,10 @@ store.define_table('info',
     Field('ship_fedex_ground_bc', 'double', default=0)
 )
 
-#store(store.info.id>0).delete()
-if len(store(store.info.id > 0).select()) == 0:
-    store.info.insert(name='[store name]')
-mystore = store(store.info.id > 0).select()[0]
 
 
 
+store.category.name.requires = IS_NOT_IN_DB(store, 'category.name')
 store.product.name.requires = IS_NOT_IN_DB(store, 'product.name')
 store.product.category.requires = IS_IN_DB(store, 'category.id', 'category.name')
 store.product.name.requires = IS_NOT_EMPTY()
@@ -141,4 +139,8 @@ store.comment.rate.requires = IS_IN_SET(range(5, 0, -1))
 for field in store.info.fields:
     if field[:-2] in ['fc',  'vc']:
         store.info[field].requires = IS_FLOAT_IN_RANGE(0, 100)
+        
+        
+if len(store(store.info.id > 0).select()) == 0:
+    store.info.insert(name='[store name]')
 mystore = store(store.info.id > 0).select()[0]
