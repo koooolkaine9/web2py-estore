@@ -10,9 +10,6 @@ response.menu = [
 
 session.google_merchant_id = mystore.google_merchant_id
 
-if not session.google_merchant_id:
-    session.flash = 'Need to add a Google Checkout ID'
-    redirect(URL(r=request, c='manage', f='index'))
 
 def index():
     categories = store(store.category.id > 0).select(orderby=store.category.name)
@@ -36,7 +33,7 @@ def category():
         featured = []
     ids = [p.id for p in featured]
     favourites = store(store.product.category == category_id).select(orderby=~store.product.rating, limitby=(start, stop))
-    favourites = [f for f in favourites if not f.id in ids] 
+    favourites = [f for f in favourites if f.id not in ids] 
     return dict(category_name=category_name, categories=categories, featured=featured, favourites=favourites)
 
 def product():
@@ -57,7 +54,8 @@ def product():
     if form.errors: response.flash = 'please check your form below'
     comments = store(store.comment.product == product.id).select(orderby=~store.comment.id)
     related_ids = [row.better for row in store(store.up_sell.product == product.id).select(store.up_sell.better)] \
-                + [row.related for row in store(store.cross_sell.product == product.id).select(store.cross_sell.related)]
+                + [row.p2 for row in store(store.cross_sell.p1 == product.id).select()] \
+                + [row.p1 for row in store(store.cross_sell.p2 == product.id).select()]
     related = store(store.product.id.belongs(related_ids)).select()
     return dict(product=product, comments=comments, related=related, form=form)
 

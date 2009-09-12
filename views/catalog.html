@@ -1,0 +1,19 @@
+{{ def show(products): }}
+<table>
+    {{ for i, product in enumerate(products): }}
+        {{ if i == 0: }}
+    <tr>
+        {{ elif i % CATALOG_WIDTH == 0: }}
+    </tr>
+    <tr>
+        {{ pass }}
+        <td style="text-align: center">
+            <a href="{{= URL(r=request, f='product', args=pretty_url(product.id, product.name)) }}">
+                <img src="{{= URL(r=request, f='show', args=product.small_image) }}" height="100px"/>
+                <div>{{= product.name }}</div>
+            </a>
+        </td>
+    {{ pass }}
+    </tr>
+</table>
+{{ return }}

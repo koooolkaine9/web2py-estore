@@ -32,16 +32,18 @@ store.define_table('product',
 # each product can have optional addons
 store.define_table('option',
     Field('product', store.product),
-    Field('description', 'text'),
+    Field('description'),
     Field('price', 'double'),
 )
 
 
 # support for merchandising
+# for p1 show p2, and for p2 show p1
 store.define_table('cross_sell',
-    Field('product', store.product),
-    Field('related', store.product),
+    Field('p1', store.product),
+    Field('p2', store.product),
 )
+# for product, show better, but not the reverse
 store.define_table('up_sell',
     Field('product', store.product),
     Field('better', store.product),
@@ -127,8 +129,8 @@ store.product.rating.requires = IS_INT_IN_RANGE(-10000, 10000)
 store.product.viewed.requires = IS_INT_IN_RANGE(0, 1000000)
 store.product.clicked.requires = IS_INT_IN_RANGE(0, 1000000)
 store.option.product.requires = IS_IN_DB(store, 'product.id', 'product.name')
-store.cross_sell.product.requires = IS_IN_DB(store, 'product.id', 'product.name')
-store.cross_sell.related.requires = IS_IN_DB(store, 'product.id', 'product.name')
+store.cross_sell.p1.requires = IS_IN_DB(store, 'product.id', 'product.name')
+store.cross_sell.p2.requires = IS_IN_DB(store, 'product.id', 'product.name')
 store.up_sell.product.requires = IS_IN_DB(store, 'product.id', 'product.name')
 store.up_sell.better.requires = IS_IN_DB(store, 'product.id', 'product.name')
 store.comment.product.requires = IS_IN_DB(store, 'product.id', 'product.name')

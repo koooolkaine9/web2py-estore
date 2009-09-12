@@ -1,5 +1,5 @@
 {{ extend 'layout.html' }}
-{{ include 'td_product.html' }}
+{{ include 'catalog.html' }}
 
 <script language="JavaScript">
 <!--
@@ -17,9 +17,9 @@ function process(form_name) {
 <h2>No products in your shopping cart</h2>
 {{ else: }}
 <h2>Products in your shopping cart</h2>
-<p><center><table width="80%">
-{{ for id, product in products.items(): show(product) }}
-</table></center></p>
+<p>
+{{ show(products.values()) }}
+</p>
 <br/><br/>
 
 <center>
