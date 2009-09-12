@@ -6,16 +6,18 @@
         <br/>
         <i>{{= product.short_description }}</i>
         <br/>
-        <b>(
+        <b>
     {{ if product.allow_rating and product.rating > 0: }}
         {{= "%.1f" % product.rating }}/5.0 rating,
     {{ pass }}
-    {{ if product.quantity_in_stock < 1: }}
-        low stock
-    {{ else: }}
-        {{= product.quantity_in_stock }} in stock
+    {{ if product.show_quantity: }}
+        {{ if product.quantity_in_stock < 1: }}
+            low stock
+        {{ else: }}
+            {{= product.quantity_in_stock }} in stock
+        {{ pass }}        
     {{ pass }}
-        )</b>
+        </b>
     </td>
     <td align="center" valign="middle">
     {{ if product.old_price: }}

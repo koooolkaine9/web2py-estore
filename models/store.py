@@ -33,7 +33,7 @@ store.define_table('product',
 store.define_table('option',
     Field('product', store.product),
     Field('description', 'text'),
-    Field('markup', 'double'),
+    Field('price', 'double'),
 )
 
 
