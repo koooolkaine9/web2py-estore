@@ -13,7 +13,7 @@
         <th>Product</th>
         <th>Total</th>
     </tr>
-    {{ for id, (qty, total_price, product, options) in sorted(order.items()): }}
+    {{ for i, (product_id, qty, total_price, product, options) in enumerate(order): }}
     <tr>
         <td>
             {{= qty }} x {{= A(product.name, _href=URL(r=request, f='product', args=pretty_url(product.id, product.name))) }}
@@ -27,7 +27,7 @@
             </table>
         </td>
         <td><h3>${{= total_price }}</h3></td>
-        <td><a href="{{= URL(r=request, f='remove_from_cart', args=product.id) }}">remove</a></td>
+        <td><a href="{{= URL(r=request, f='remove_from_cart', args=i) }}">remove</a></td>
     </tr>        
     {{ pass }}
     <tr>
@@ -38,13 +38,13 @@
 <br/>
 <br/>
 <form name="google_form" action="https://checkout.google.com/cws/v2/Merchant/{{= merchant_id }}/checkoutForm" id="BB_BuyButtonForm" method="post" name="BB_BuyButtonForm">
-    {{ for k, (id, (qty, total_price, product, options)) in enumerate(order.items()): }}
-    <input name="item_name_{{= k }}" type="hidden" value="{{= product.name }}"/>
-    <input name="item_description_{{= k }}" type="hidden" value="{{= product.description }}"/>
-    <input name="item_quantity_{{= k }}" type="hidden" value="{{= session.cart[id] }}"/>
-    <input name="item_price_{{= k }}" type="hidden" value="{{= total_price }}"/>
-    <input name="item_weight_{{= k }}" unit="LB" type="hidden" value="{{= product.weight_in_pounds }}"/>
-    <input name="item_currency_{{= k }}" type="hidden" value="USD"/>
+    {{ for i, (product_id, qty, total_price, product, options) in enumerate(order): }}
+    <input name="item_name_{{= i }}" type="hidden" value="{{= product.name }}"/>
+    <input name="item_description_{{= i }}" type="hidden" value="{{= product.description }}"/>
+    <input name="item_quantity_{{= i }}" type="hidden" value="{{= qty }}"/>
+    <input name="item_price_{{= i }}" type="hidden" value="{{= total_price }}"/>
+    <input name="item_weight_{{= i }}" unit="LB" type="hidden" value="{{= product.weight_in_pounds }}"/>
+    <input name="item_currency_{{= i }}" type="hidden" value="USD"/>
     {{ pass }}
 
     <input name="_charset_" type="hidden" value="utf-8"/>

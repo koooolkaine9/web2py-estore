@@ -1,7 +1,7 @@
 
 if not session.cart:
     # instantiate new cart
-    session.cart, session.balance = {}, 0
+    session.cart, session.balance = [], 0
 session.google_merchant_id = mystore.google_merchant_id
 
     
@@ -48,13 +48,16 @@ def product():
     product = products[0]
     product.update_record(viewed=product.viewed+1)
     
-    options = store(store.option.product == product.id).select(orderby=store.option.id)
+    options = store(store.option.product == product.id).select(orderby=store.option.id)    
     product_form = FORM(
         TABLE(
-            [TR(INPUT(_name='option', _value=option.id, _type='checkbox', _onchange="update_price(this, %f)" % option.price), option.description, '$%.2f' % option.price) for option in options],        
-            TR(H2('$%.2f' % float(product.price), _id='total_price')),
-            TR(BR()),
-            TR(TH('Quantity:'), INPUT(_name='quantity', _class='integer', _value=1, _size=3), INPUT(_type='submit', _value='Add to cart')),
+            [TR(TD(INPUT(_name='option', _value=option.id, _type='checkbox', _onchange="update_price(this, %f)" % option.price), option.description), H3('$%.2f' % option.price)) for option in options],        
+            TR(
+                'Price:',
+                H2('$%.2f' % float(product.price), _id='total_price')
+            ),
+            BR(),
+            TH('Qty:', INPUT(_name='quantity', _class='integer', _value=1, _size=1)), INPUT(_type='submit', _value='Add to cart'),
         )
     )
     if product_form.accepts(request.vars, session):  
@@ -65,7 +68,7 @@ def product():
         option_ids = [int(o) for o in option_ids]
         
         product.update_record(clicked=product.clicked+1)    
-        session.cart[product_id] = quantity, option_ids
+        session.cart.append((product_id, quantity, option_ids))
         redirect(URL(r=request, f='checkout'))
     
     
@@ -93,56 +96,36 @@ def product():
 {{ if product.old_price: }}
 <b>was ${{= '%.2f' % float(product.old_price) }}</b>
 {{ pass }}
-{{ if product.id in session.cart: }}
-    ({{= session.cart[product.id] }} already in cart)
-{{ pass }}
 </form>
 
 """
 
-
-def add_to_cart():
-    # add product to cart
-    # XXX add support for adding multiple at once
-    # XXX combine in FORM in product()
-    quantity = request.vars.get('quantity', 1)
-    option_ids = request.vars.get('option', [])
-    if not isinstance(option_ids, list): option_ids = [option_ids]
-    option_ids = [int(o) for o in option_ids]
-    
-    pid = int(request.args[0])
-    product = store(store.product.id == pid).select()[0]
-    product.update_record(clicked=product.clicked+1)    
-    session.cart[pid] = quantity, option_ids
-    redirect(URL(r=request, f='checkout'))
-
 def remove_from_cart():
     # remove product from cart
-    pid = int(request.args[0])
-    if pid in session.cart:
-        del session.cart[pid]
+    del session.cart[int(request.args[0])]
     redirect(URL(r=request, f='checkout'))
 
 def empty_cart():
     # empty cart of all products
-    session.cart, session.balance = {}, 0
+    session.cart.clear()
+    session.balance = 0
     redirect(URL(r=request, f='checkout'))
 
 
 def checkout():
-    order = {}
+    order = []
     balance = 0
-    for pid, (qty, option_ids) in session.cart.items():
-        products = store(store.product.id == pid).select()
+    for product_id, qty, option_ids in session.cart:
+        products = store(store.product.id == product_id).select()
         if products:
             product = products[0]
             options = store(store.option.id.belongs(option_ids)).select() if option_ids else []
             total_price = qty * (product.price + sum([option.price for option in options]))
-            order[pid] = qty, total_price, product, options
+            order.append((product_id, qty, total_price, product, options))
             balance += total_price
         else:
             # invalid product
-            del session.cart[pid]
+            pass
     session.balance = balance # XXX is updating in time?
     return dict(order=order, merchant_id=session.google_merchant_id)
 
