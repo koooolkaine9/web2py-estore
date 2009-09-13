@@ -1,14 +1,17 @@
 
-if not session.cart: session.cart, session.balance= {}, 0
-app = request.application
+if not session.cart:
+    # instantiate new cart
+    session.cart, session.balance = {}, 0
+session.google_merchant_id = mystore.google_merchant_id
+
+    
 response.menu = [
-  ['Store Front', request.function == 'index','/%s/default/index' % app],
-  ['About Us', request.function == 'aboutus','/%s/default/aboutus' % app],
-  ['Contact Us', request.function == 'contactus','/%s/default/contactus' % app],
-  ['Shopping Cart $%.2f' % float(session.balance), request.function == 'checkout', '/%s/default/checkout' % app]
+  ['Store Front', request.function == 'index', URL(r=request, f='index')],
+  ['About Us', request.function == 'aboutus', URL(r=request, f='aboutus')],
+  ['Contact Us', request.function == 'contactus', URL(r=request, f='contactus')],
+  ['Shopping Cart $%.2f' % float(session.balance), request.function == 'checkout', URL(r=request, f='checkout')]
 ]
 
-session.google_merchant_id = mystore.google_merchant_id
 
 
 def index():
@@ -64,37 +67,44 @@ def product():
 
 
 def add_to_cart():
-    # allow add to cart
+    # add product to cart
+    # XXX add support for adding multiple at once
     pid = request.args[0]
     product = store(store.product.id == pid).select()[0]
-    product.update_record(clicked=product.clicked+1)
-    try: qty = session.cart[pid] + 1
-    except: qty = 1
-    session.cart[pid] = qty
+    product.update_record(clicked=product.clicked+1)    
+    session.cart[pid] = session.cart.get(pid, 0) + 1
     session.balance += product.price
     redirect(URL(r=request, f='checkout'))
 
 def remove_from_cart():
-    # allow add to cart
+    # remove product from cart
     pid = request.args[0]
     product = store(store.product.id == pid).select()[0]
-    if session.cart.has_key(pid):
-        session.balance -= product.price
-        session.cart[pid] -= 1
-        if not session.cart[pid]: del session.cart[pid]
+    if pid in session.cart:
+        qty = session.cart[pid]
+        session.balance -= qty * product.price
+        del session.cart[pid]
     redirect(URL(r=request, f='checkout'))
 
 def empty_cart():
-    # allow add to cart
+    # empty cart of all products
     session.cart, session.balance = {}, 0
     redirect(URL(r=request, f='checkout'))
 
+
 def checkout():
-    pids = session.cart.keys()
-    cart = {}
-    pids = session.cart.keys()
     products = {}
-    for pid in pids: products[pid] = store(store.product.id==pid).select()[0]
+    balance = 0
+    for pid in session.cart.keys():
+        product = store.product[pid]
+        if product:
+            products[pid] = product
+            qty = session.cart[pid]
+            balance += qty * product.price
+        else:
+            # invalid product
+            del session.cart[pid]
+    session.balance = balance
     return dict(products=products, merchant_id=session.google_merchant_id)
 
 def popup():
@@ -105,6 +115,7 @@ def show():
     import gluon.contenttype, os
     filename = '/'.join(request.args)
     response.headers['Content-Type'] = gluon.contenttype.contenttype(filename)
+    # XXX is this path going to be a problem on Windows?
     return open(os.path.join(request.folder, 'uploads', filename), 'rb').read()
 
 def aboutus(): return dict()

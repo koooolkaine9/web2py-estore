@@ -13,9 +13,9 @@
     <table>
     {{ for option in options: }}
         <tr>
-            <td><input type="checkbox"/></td>
+            <td><input type="checkbox" onchange="update_price(this, {{= option.price }})"/></td>
             <td>{{= option.description }}</td>
-            <td><b>${{= option.price }}</b></td>
+            <td><b>${{= '%.2f' % option.price }}</b></td>
         </tr>
     {{ pass}}
     </table>
@@ -23,19 +23,16 @@
 {{ pass }}
 
 {{ if product.old_price: }}
-<b>was ${{= "%.2f" % float(product.old_price) }}</b>
+<b>was ${{= '%.2f' % float(product.old_price) }}</b>
 {{ pass }}
-<h2 id="total_price">${{= "%.2f" % float(product.price) }}</h2>
-{{ if session.cart.has_key(str(product.id)): }}
-<b>x {{= session.cart[str(product.id)] }} in cart</b>
-<a href="{{= URL(r=request, f='remove_from_cart', args=product.id) }}">remove from cart</a>
-<br/>
-{{ pass }}
+<h2>$<span id="total_price">{{= '%.2f' % float(product.price) }}</span></h2>
 <a href="{{= URL(r=request, f='add_to_cart', args=product.id) }}">add to cart</a>
-
+{{ if session.cart.has_key(str(product.id)): }}
+    ({{= session.cart[str(product.id)] }} already in cart)
+{{ pass }}
 
 {{ if product.allow_rating and product.rating > 0: }}
-        {{= "%.1f" % product.rating }}/5.0 rating,
+        {{= '%.1f' % product.rating }}/5.0 rating,
     {{ pass }}
     {{ if product.show_quantity: }}
         {{ if product.quantity_in_stock < 1: }}
@@ -65,3 +62,15 @@
     {{ pass }}
     {{= form }}
 {{ pass }}
+
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3/jquery.min.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+    function update_price(e, option_price) {
+        var total_price = parseFloat($("#total_price").text());
+        if($(e).is(':checked')) total_price += option_price;
+        else total_price -= option_price;
+        $("#total_price").text(total_price);
+    }
+</script>
