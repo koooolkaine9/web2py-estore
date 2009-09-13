@@ -69,20 +69,22 @@ def product():
 def add_to_cart():
     # add product to cart
     # XXX add support for adding multiple at once
-    pid = request.args[0]
+    # XXX combine in FORM in product()
+    quantity = request.vars.get('quantity', 1)
+    option_ids = request.vars.get('option', [])
+    if not isinstance(option_ids, list): option_ids = [option_ids]
+    option_ids = [int(o) for o in option_ids]
+    
+    pid = int(request.args[0])
     product = store(store.product.id == pid).select()[0]
     product.update_record(clicked=product.clicked+1)    
-    session.cart[pid] = session.cart.get(pid, 0) + 1
-    session.balance += product.price
+    session.cart[pid] = quantity, option_ids
     redirect(URL(r=request, f='checkout'))
 
 def remove_from_cart():
     # remove product from cart
-    pid = request.args[0]
-    product = store(store.product.id == pid).select()[0]
+    pid = int(request.args[0])
     if pid in session.cart:
-        qty = session.cart[pid]
-        session.balance -= qty * product.price
         del session.cart[pid]
     redirect(URL(r=request, f='checkout'))
 
@@ -93,19 +95,21 @@ def empty_cart():
 
 
 def checkout():
-    products = {}
+    order = {}
     balance = 0
-    for pid in session.cart.keys():
-        product = store.product[pid]
-        if product:
-            products[pid] = product
-            qty = session.cart[pid]
-            balance += qty * product.price
+    for pid, (qty, option_ids) in session.cart.items():
+        products = store(store.product.id == pid).select()
+        if products:
+            product = products[0]
+            options = store(store.option.id.belongs(option_ids)).select() if option_ids else []
+            total_price = qty * (product.price + sum([option.price for option in options]))
+            order[pid] = qty, total_price, product, options
+            balance += total_price
         else:
             # invalid product
             del session.cart[pid]
-    session.balance = balance
-    return dict(products=products, merchant_id=session.google_merchant_id)
+    session.balance = balance # XXX is updating in time?
+    return dict(order=order, merchant_id=session.google_merchant_id)
 
 def popup():
     return dict()

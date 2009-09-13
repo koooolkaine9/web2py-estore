@@ -8,16 +8,18 @@
 
 <p>{{= product.description }}</p>
 
+{{ # XXX change to use FORM? }}
+<form id="add_to_cart" action="{{= URL(r=request, f='add_to_cart', args=product.id) }}" method="post" enctype="multipart/form-data">
 {{ if options: }}
     <h3>Options</h3>
     <table>
     {{ for option in options: }}
         <tr>
-            <td><input type="checkbox" onchange="update_price(this, {{= option.price }})"/></td>
+            <td><input name="option" value="{{= option.id }}" type="checkbox" onchange="update_price(this, {{= option.price }})"/></td>
             <td>{{= option.description }}</td>
-            <td><b>${{= '%.2f' % option.price }}</b></td>
+            <td> (+<b>${{= '%.2f' % option.price }}</b>)</td>
         </tr>
-    {{ pass}}
+    {{ pass }}
     </table>
     <br/>
 {{ pass }}
@@ -26,10 +28,11 @@
 <b>was ${{= '%.2f' % float(product.old_price) }}</b>
 {{ pass }}
 <h2>$<span id="total_price">{{= '%.2f' % float(product.price) }}</span></h2>
-<a href="{{= URL(r=request, f='add_to_cart', args=product.id) }}">add to cart</a>
-{{ if session.cart.has_key(str(product.id)): }}
-    ({{= session.cart[str(product.id)] }} already in cart)
+<input type="submit" value="Add to cart"/>
+{{ if product.id in session.cart: }}
+    ({{= session.cart[product.id] }} already in cart)
 {{ pass }}
+</form>
 
 {{ if product.allow_rating and product.rating > 0: }}
         {{= '%.1f' % product.rating }}/5.0 rating,
@@ -52,6 +55,7 @@
 
 
 {{ if product.allow_rating: }}
+<br/>
     {{ if comments: }}
 <h2>Visitors' comments</h2>
 <p><ul>
@@ -73,5 +77,9 @@
         if($(e).is(':checked')) total_price += option_price;
         else total_price -= option_price;
         $("#total_price").text(total_price);
+    }
+    
+    function add_to_cart() {
+        //a href="{{= URL(r=request, f='add_to_cart', args=product.id) }}">add to cart</a>
     }
 </script>

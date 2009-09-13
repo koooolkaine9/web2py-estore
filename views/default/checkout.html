@@ -4,17 +4,31 @@
 
 <h1>Checkout</h1>
 
-{{ if not products: }}
+{{ if not order: }}
 <h2>No products in your shopping cart</h2>
 {{ else: }}
 <h2>Products in your shopping cart</h2>
 <table>
-    {{ for id, product in sorted(products.items()): }}
     <tr>
-        <td>{{= A(product.name, _href=URL(r=request, f='product', args=pretty_url(product.id, product.name))) }}</td>
-        <td><h3>${{= product.price }}</h3></td>
-        <td><a href="{{= URL(r=request, f='remove_from_cart', args=product.id) }}">remove</a></td>
+        <th>Product</th>
+        <th>Total</th>
     </tr>
+    {{ for id, (qty, total_price, product, options) in sorted(order.items()): }}
+    <tr>
+        <td>
+            {{= qty }} x {{= A(product.name, _href=URL(r=request, f='product', args=pretty_url(product.id, product.name))) }}
+            <table>
+        {{ for option in options: }}
+                <tr>
+                    <td>+ {{= option.description }}</td>
+                    <td>${{= option.price }}</td>
+                </tr>
+        {{ pass }}
+            </table>
+        </td>
+        <td><h3>${{= total_price }}</h3></td>
+        <td><a href="{{= URL(r=request, f='remove_from_cart', args=product.id) }}">remove</a></td>
+    </tr>        
     {{ pass }}
     <tr>
         <td style="text-align:right"><h3>Balance:</h3></td>
@@ -24,11 +38,11 @@
 <br/>
 <br/>
 <form name="google_form" action="https://checkout.google.com/cws/v2/Merchant/{{= merchant_id }}/checkoutForm" id="BB_BuyButtonForm" method="post" name="BB_BuyButtonForm">
-    {{ for k, (id, product) in enumerate(products.items()): }}
+    {{ for k, (id, (qty, total_price, product, options)) in enumerate(order.items()): }}
     <input name="item_name_{{= k }}" type="hidden" value="{{= product.name }}"/>
     <input name="item_description_{{= k }}" type="hidden" value="{{= product.description }}"/>
     <input name="item_quantity_{{= k }}" type="hidden" value="{{= session.cart[id] }}"/>
-    <input name="item_price_{{= k }}" type="hidden" value="{{= product.price}}"/>
+    <input name="item_price_{{= k }}" type="hidden" value="{{= total_price }}"/>
     <input name="item_weight_{{= k }}" unit="LB" type="hidden" value="{{= product.weight_in_pounds }}"/>
     <input name="item_currency_{{= k }}" type="hidden" value="USD"/>
     {{ pass }}

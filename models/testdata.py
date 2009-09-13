@@ -11,11 +11,10 @@ if False: # set to True to insert test data
         hp6 = store.product.insert(name="Harry Potter and the Half-Blood Prince", category=fantasy_id, price=9.91, small_image='testdata/hp6.jpg')
         
         store.option.insert(product=hp1, description='Bookmark', price=1.5)
-        store.option.insert(product=hp1, description='Hat', price=12)
+        store.option.insert(product=hp1, description='Wizard hat', price=12)
         
         for p2 in (hp2, hp3, hp4, hp5, hp6):
             store.cross_sell.insert(p1=hp1, p2=p2)
             
         hp1_hard = store.product.insert(name="Harry Potter and the Sorcerer's Stone [hardcover]", category=fantasy_id, price=15.91, small_image='testdata/hp1.jpg')
         store.up_sell.insert(product=hp1, better=hp1_hard)
-        
