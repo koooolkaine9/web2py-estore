@@ -59,11 +59,11 @@ def product():
     comments = store(store.comment.product == product.id).select(orderby=~store.comment.id)
     
     options = store(store.option.product == product.id).select(orderby=store.option.id)
-    related_ids = [row.better for row in store(store.up_sell.product == product.id).select(store.up_sell.better)] \
-                + [row.p2 for row in store(store.cross_sell.p1 == product.id).select()] \
+    better_ids = [row.better for row in store(store.up_sell.product == product.id).select(store.up_sell.better)]
+    related_ids = [row.p2 for row in store(store.cross_sell.p1 == product.id).select()] \
                 + [row.p1 for row in store(store.cross_sell.p2 == product.id).select()]
-    related = store(store.product.id.belongs(related_ids)).select()
-    return dict(product=product, comments=comments, options=options, related=related, form=form)
+    suggested = store(store.product.id.belongs(better_ids + related_ids)).select()
+    return dict(product=product, comments=comments, options=options, suggested=suggested, form=form)
 
 
 def add_to_cart():
