@@ -22,7 +22,8 @@ def index():
 def category():
     if not request.args: redirect(URL(r=request, f='index'))
     category_id = pretty_id(request.args[0])
-    if len(request.args) == 3: 
+    if len(request.args) == 3:
+        # pagination
         start, stop = int(request.args[1]), int(request.args[2])
     else:
         start, stop = 0, 20
@@ -47,23 +48,57 @@ def product():
     product = products[0]
     product.update_record(viewed=product.viewed+1)
     
+    options = store(store.option.product == product.id).select(orderby=store.option.id)
+    product_form = FORM(
+        TABLE(
+            [TR(INPUT(_name='option', _value=option.id, _type='checkbox', _onchange="update_price(this, %f)" % option.price), option.description, '$%.2f' % option.price) for option in options],        
+            TR(H2('$%.2f' % float(product.price), _id='total_price')),
+            TR(BR()),
+            TR(TH('Quantity:'), INPUT(_name='quantity', _class='integer', _value=1, _size=3), INPUT(_type='submit', _value='Add to cart')),
+        )
+    )
+    if product_form.accepts(request.vars, session):  
+        quantity = int(product_form.vars.quantity)
+        option_ids = product_form.vars.option
+        if not isinstance(option_ids, list):
+            option_ids = [option_ids] if option_ids else []
+        option_ids = [int(o) for o in option_ids]
+        
+        product.update_record(clicked=product.clicked+1)    
+        session.cart[product_id] = quantity, option_ids
+        redirect(URL(r=request, f='checkout'))
+    
+    
     # post a comment about a product    
-    form = SQLFORM(store.comment, fields=['author', 'email', 'body', 'rate'])
-    form.vars.product = product.id
-    if form.accepts(request.vars, session):
+    comment_form = SQLFORM(store.comment, fields=['author', 'email', 'body', 'rate'])
+    comment_form.vars.product = product.id
+    if comment_form.accepts(request.vars, session):
         nc = store(store.comment.product == product.id).count()
-        t = products[0].rating*nc + int(form.vars.rate)
+        t = products[0].rating*nc + int(comment_form.vars.rate)
         products[0].update_record(rating=t/(nc+1))
         response.flash = 'comment posted'
-    if form.errors: response.flash = 'please check your form below'
+    if comment_form.errors: response.flash = 'invalid comment'
     comments = store(store.comment.product == product.id).select(orderby=~store.comment.id)
     
-    options = store(store.option.product == product.id).select(orderby=store.option.id)
     better_ids = [row.better for row in store(store.up_sell.product == product.id).select(store.up_sell.better)]
-    related_ids = [row.p2 for row in store(store.cross_sell.p1 == product.id).select()] \
-                + [row.p1 for row in store(store.cross_sell.p2 == product.id).select()]
-    suggested = store(store.product.id.belongs(better_ids + related_ids)).select()
-    return dict(product=product, comments=comments, options=options, suggested=suggested, form=form)
+    related_ids = [row.p2 for row in store(store.cross_sell.p1 == product.id).select()] + [row.p1 for row in store(store.cross_sell.p2 == product.id).select()]
+    suggested = store(store.product.id.belongs(better_ids + related_ids)).select(orderby=~store.product.rating)
+    return dict(product=product, comments=comments, options=options, suggested=suggested, product_form=product_form, comment_form=comment_form)
+
+
+
+"""
+
+
+{{ if product.old_price: }}
+<b>was ${{= '%.2f' % float(product.old_price) }}</b>
+{{ pass }}
+{{ if product.id in session.cart: }}
+    ({{= session.cart[product.id] }} already in cart)
+{{ pass }}
+</form>
+
+"""
 
 
 def add_to_cart():

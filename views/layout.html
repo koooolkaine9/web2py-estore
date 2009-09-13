@@ -75,6 +75,7 @@ div.fluid { width: 93% !important; }
  #primaryContent_columnless { position: relative; }
  #columnA_columnless { position: relative; width: 100%; }
 </style>
+{{ include 'web2py_ajax.html' }}
 </head>
 <body>
 <div id="header">
@@ -109,21 +110,5 @@ div.fluid { width: 93% !important; }
     </div>
   </div>
 </div>
-
-<script type="text/javascript">
-<!--
-function popitup(url) {
- newwindow = window.open(url, 'name', 'height=400,width=600');
- if(window.focus) newwindow.focus();
- return false;
-}
-function collapse(name) {
- if(this.document.getElementById(name).style.display == "none")
-  this.document.getElementById(name).style.display = "block";
- else
-  this.document.getElementById(name).style.display = "none";
-}
-//-->
-</script>
 </body>
 </html>
