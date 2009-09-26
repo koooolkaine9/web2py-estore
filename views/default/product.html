@@ -6,14 +6,14 @@
 
 <img src="{{= URL(r=request, f='show', args=(product.large_image if product.large_image else product.small_image)) }}" height="200px"/>
 
-<p>{{= XML(product.description) }}</p>
-
 {{= product_form }}
+
+<p>{{= XML(product.description) }}</p>
 
 {{ if product.allow_rating and product.rating > 0: }}
         {{= '%.1f' % product.rating }}/5.0 rating,
     {{ pass }}
-    {{ if product.show_quantity: }}
+    {{ if product.quantity_in_stock != UNDEFINED: }}
         {{ if product.quantity_in_stock < 1: }}
             low stock
         {{ else: }}

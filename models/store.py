@@ -1,4 +1,6 @@
-# try something like
+UNDEFINED = -1
+
+
 store = DAL("sqlite://store.db")
 
 
@@ -15,8 +17,8 @@ store.define_table('product',
     Field('description', 'text', default=''),
     Field('small_image', 'upload'),
     Field('large_image', 'upload', default=''),
-    Field('quantity_in_stock', 'integer', default=0),
-    Field('show_quantity', 'boolean', default=False),
+    Field('quantity_in_stock', 'integer', default=UNDEFINED), # if UNDEFINED, don't show
+    Field('max_quantity', 'integer', default=0), # maximum quantity that can be purchased in an order. If 0, no limit. If UNDEFINED, don't show.
     Field('price', 'double', default=1.0),
     Field('old_price', 'double', default=0.0),
     Field('weight_in_pounds', 'double', default=1),
