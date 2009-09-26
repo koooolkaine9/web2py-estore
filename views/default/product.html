@@ -6,7 +6,7 @@
 
 <img src="{{= URL(r=request, f='show', args=(product.large_image if product.large_image else product.small_image)) }}" height="200px"/>
 
-<p>{{= product.description }}</p>
+<p>{{= XML(product.description) }}</p>
 
 {{= product_form }}
 
@@ -52,6 +52,6 @@
     function update_price(e, option_price) {
         if($(e).is(':checked')) total_price += option_price;
         else total_price -= option_price;
-        $("#total_price").text('$' + total_price);
+        $("#total_price").text('$' + Math.round(100*total_price)/100);
     }
 </script>

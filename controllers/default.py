@@ -28,9 +28,11 @@ def category():
     else:
         start, stop = 0, 20
     categories = store(store.category.id > 0).select(orderby=store.category.name)
+    category_name = None
     for category in categories: 
         if category.id == category_id:
-            category_name = category.name
+            response.title = category_name = category.name
+    if not category_name: redirect(URL(r=request, f='index'))
     if start == 0:
         featured = store(store.product.featured == True)(store.product.category == category_id).select(orderby=~store.product.id)
     else:
@@ -46,12 +48,13 @@ def product():
     products = store(store.product.id == product_id).select()
     if not products: redirect(URL(r=request, f='index'))
     product = products[0]
+    response.title = product.name
     product.update_record(viewed=product.viewed+1)
     
     options = store(store.option.product == product.id).select(orderby=store.option.id)    
     product_form = FORM(
         TABLE(
-            [TR(TD(INPUT(_name='option', _value=option.id, _type='checkbox', _onchange="update_price(this, %f)" % option.price), option.description), H3('$%.2f' % option.price)) for option in options],        
+            [TR(TD(INPUT(_name='option', _value=option.id, _type='checkbox', _onchange="update_price(this, %.2f)" % option.price), option.description), H3('$%.2f' % option.price)) for option in options],        
             TR(
                 'Price:',
                 H2('$%.2f' % float(product.price), _id='total_price')
