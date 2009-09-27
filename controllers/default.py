@@ -38,7 +38,7 @@ def category():
     else:
         featured = []
     ids = [p.id for p in featured]
-    favourites = store(store.product.category == category_id).select(orderby=~store.product.rating, limitby=(start, stop))
+    favourites = store(store.product.category == category_id).select(limitby=(start, stop))
     favourites = [f for f in favourites if f.id not in ids] 
     return dict(category_name=category_name, categories=categories, featured=featured, favourites=favourites)
 
@@ -88,7 +88,7 @@ def product():
     
     better_ids = [row.better for row in store(store.up_sell.product == product.id).select(store.up_sell.better)]
     related_ids = [row.p2 for row in store(store.cross_sell.p1 == product.id).select()] + [row.p1 for row in store(store.cross_sell.p2 == product.id).select()]
-    suggested = [] # XXXstore(store.product.id.belongs(better_ids + related_ids)).select()
+    suggested = [store.product[id] for id in better_ids + related_ids] # XXXstore(store.product.id.belongs(better_ids + related_ids)).select()
     return dict(product=product, comments=comments, options=options, suggested=suggested, product_form=product_form, comment_form=comment_form)
 
 
