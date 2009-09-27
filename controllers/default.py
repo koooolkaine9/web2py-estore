@@ -15,8 +15,8 @@ response.menu = [
 
 
 def index():
-    categories = store(store.category.id > 0).select(orderby=store.category.name)
-    featured = store(store.product.featured == True).select(orderby=~store.product.id)
+    categories = store().select(store.category.ALL, orderby=store.category.name)
+    featured = store(store.product.featured == True).select()
     return dict(categories=categories,featured=featured)
 
 def category():
@@ -27,14 +27,14 @@ def category():
         start, stop = int(request.args[1]), int(request.args[2])
     else:
         start, stop = 0, 20
-    categories = store(store.category.id > 0).select(orderby=store.category.name)
+    categories = store().select(store.category.ALL, orderby=store.category.name)
     category_name = None
     for category in categories: 
         if category.id == category_id:
             response.title = category_name = category.name
     if not category_name: redirect(URL(r=request, f='index'))
     if start == 0:
-        featured = store(store.product.featured == True)(store.product.category == category_id).select(orderby=~store.product.id)
+        featured = store(store.product.featured == True)(store.product.category == category_id).select()
     else:
         featured = []
     ids = [p.id for p in featured]
@@ -51,7 +51,7 @@ def product():
     response.title = product.name
     product.update_record(viewed=product.viewed+1)
     
-    options = store(store.option.product == product.id).select(orderby=store.option.id)    
+    options = store(store.option.product == product.id).select()    
     product_form = FORM(
         TABLE(
             [TR(TD(INPUT(_name='option', _value=option.id, _type='checkbox', _onchange="update_price(this, %.2f)" % option.price), option.description), H3('$%.2f' % option.price)) for option in options],        
@@ -84,11 +84,11 @@ def product():
         products[0].update_record(rating=t/(nc+1))
         response.flash = 'comment posted'
     if comment_form.errors: response.flash = 'invalid comment'
-    comments = store(store.comment.product == product.id).select(orderby=~store.comment.id)
+    comments = store(store.comment.product == product.id).select()
     
     better_ids = [row.better for row in store(store.up_sell.product == product.id).select(store.up_sell.better)]
     related_ids = [row.p2 for row in store(store.cross_sell.p1 == product.id).select()] + [row.p1 for row in store(store.cross_sell.p2 == product.id).select()]
-    suggested = store(store.product.id.belongs(better_ids + related_ids)).select(orderby=~store.product.rating)
+    suggested = [] # XXXstore(store.product.id.belongs(better_ids + related_ids)).select()
     return dict(product=product, comments=comments, options=options, suggested=suggested, product_form=product_form, comment_form=comment_form)
 
 
@@ -122,7 +122,7 @@ def checkout():
         products = store(store.product.id == product_id).select()
         if products:
             product = products[0]
-            options = store(store.option.id.belongs(option_ids)).select() if option_ids else []
+            options = [store.option[id] for id in option_ids]# XXX store(store.option.id.belongs(option_ids)).select() if option_ids else []
             total_price = qty * (product.price + sum([option.price for option in options]))
             order.append((product_id, qty, total_price, product, options))
             balance += total_price

@@ -1,7 +1,11 @@
 UNDEFINED = -1
 
 
-store = DAL("sqlite://store.db")
+if request.env.web2py_runtime_gae:            # if running on Google App Engine
+    store = DAL('gae')                           # connect to Google BigTable
+    session.connect(request, response, db=store) # and store sessions and tickets there
+else:
+    store = DAL("sqlite://store.db")
 
 
 store.define_table('category', 
